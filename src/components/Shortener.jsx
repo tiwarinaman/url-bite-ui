@@ -26,7 +26,7 @@ const Shortener = () => {
             setShortUrl(response.data.short_url); // Update short URL with API response
         } catch (err) {
             console.error(err);
-            setError('Failed to generate the short URL. Please try again.');
+            setError(err.response?.data?.error);
         } finally {
             setLoading(false); // Hide loader
         }
