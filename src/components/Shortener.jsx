@@ -34,7 +34,6 @@ const Shortener = () => {
 
     const handleCopy = () => {
         navigator.clipboard.writeText(shortUrl);
-        alert('Short URL copied to clipboard!');
     };
 
     return (
