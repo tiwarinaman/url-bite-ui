@@ -1,11 +1,13 @@
 import React, {useState} from 'react';
 import axios from 'axios';
+import {Copy, Check} from 'lucide-react';
 
 const Shortener = () => {
     const [longUrl, setLongUrl] = useState('');
     const [shortUrl, setShortUrl] = useState('');
     const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false); // State to track loading
+    const [loading, setLoading] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const handleGenerate = async () => {
         if (!longUrl) {
@@ -14,26 +16,35 @@ const Shortener = () => {
             return;
         }
 
-        setLoading(true); // Show loader
-        setError(''); // Clear any previous errors
-        setShortUrl(''); // Clear any previous short URL
+        setLoading(true);
+        setError('');
+        setShortUrl('');
 
         try {
             const response = await axios.post('https://api.url-bite.namanbytes.dev/shorten', {
                 original_url: longUrl,
             });
 
-            setShortUrl(response.data.short_url); // Update short URL with API response
+            setShortUrl(response.data.short_url);
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.error);
         } finally {
-            setLoading(false); // Hide loader
+            setLoading(false);
         }
     };
 
-    const handleCopy = () => {
-        navigator.clipboard.writeText(shortUrl);
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(shortUrl);
+            setCopied(true);
+            // Reset copied state after 2 seconds
+            setTimeout(() => {
+                setCopied(false);
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
     };
 
     return (
@@ -51,7 +62,7 @@ const Shortener = () => {
                     className={`px-8 py-3 text-white rounded-lg font-semibold transition duration-300 ${
                         loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
                     }`}
-                    disabled={loading} // Disable button while loading
+                    disabled={loading}
                 >
                     {loading ? 'Loading...' : 'Shorten Now'}
                 </button>
@@ -62,8 +73,25 @@ const Shortener = () => {
                     <p className="text-gray-500 mb-1">Shortened URL:</p>
                     <div className="flex justify-between items-center">
                         <p className="text-blue-600 font-medium">{shortUrl}</p>
-                        <button onClick={handleCopy} className="text-blue-500 hover:text-blue-600">
-                            Copy
+                        <button
+                            onClick={handleCopy}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-md transition-all duration-300 ${
+                                copied
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                            }`}
+                        >
+                            {copied ? (
+                                <>
+                                    <Check size={16}/>
+                                    <span>Copied!</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Copy size={16}/>
+                                    <span>Copy URL</span>
+                                </>
+                            )}
                         </button>
                     </div>
                 </div>
